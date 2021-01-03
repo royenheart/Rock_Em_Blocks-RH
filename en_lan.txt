@@ -1,0 +1,70 @@
+Map has been initialed
+Map has been printed
+Deleted,you have earned coins in total:
+Found the map has dead,recreating the map
+Falling down...
+Welcome,user
+Help:
+Github:https://github.com/royenheart
+Website:royenheart.com
+The version is still demo,internet rank etc hasn't been coded
+The number or char before the introduction is the command
+command hasn't been found,you can input 'H' for help
+command has been locked,you can't use it now
+Select your language:
+1.Chinese
+2.English
+--------------------------------------------------------------------------------
+Please intput a command to change the settings
+L:select your language
+U:initial your user_id
+If user hasn't exited,we will created one
+If user has data,the level will be the the max level you have played
+H:list help that may help you
+Q:Save and quit
+--------------------------------------------------------------------------------
+Please input a command to make play the game
+P.switch the nearby block
+S.change the settings
+NULL
+NULL
+NULL
+I.play the previous levels
+Q.quit the game
+Please input the selected number position
+the format is posxA,posyA posxB,posyB
+you have input the position which is out of the map
+please switch two nearby pixels
+the switch seems to have no Deleted
+you have thus lower 5 scores
+you have passed this level!
+Now you are in the level:
+Game Over!
+you have earned scores this time totally:
+Awsome!!!
+Excellent!!
+Great!
+Loser~~
+Are you really playing this game???
+you have totally passed levels:
+Welcome to play this game again!
+now choose your user_id,most 20 characters and consists of only english
+the user data hasn't been found,we will help you create one
+user has been found,wait for load
+user id is different from the previous,want to cover the old?
+you have passed every level in this pack!!!
+enjoy your success,and if you want to find more map pack to play
+welcome to our website royenheart.com for more seasons pack!
+the name is illegal
+Please input another legal name
+the play mod has changed(cheated mod)
+you are now can't update your game_play_data
+your real score won't be changed and updated
+type "help" for cheat list
+exit the cheated mod,using "quit"
+cheat command can't be found
+good bye,cheater.
+you can choose a previous level to play,range from 0-39
+the level you choose is what you havn't passed!
+the level you choose is out of range!
+please choose another legal level,range from 0-39
