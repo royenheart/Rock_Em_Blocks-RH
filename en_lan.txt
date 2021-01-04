@@ -26,9 +26,9 @@ Q:Save and quit
 Please input a command to make play the game
 P.switch the nearby block
 S.change the settings
-NULL
-NULL
-NULL
+T.change the themes/pixel color
+F.refreash the map
+G.Game Information
 I.play the previous levels
 Q.quit the game
 Please input the selected number position
@@ -68,3 +68,21 @@ you can choose a previous level to play,range from 0-39
 the level you choose is what you havn't passed!
 the level you choose is out of range!
 please choose another legal level,range from 0-39
+your id now plays the max_level is:
+now list the color table
+now list the color every pattern
+you can input the listed below code you choose to change its color
+0-5 as the number in map,6 as the fore color,7 as the back color
+want to change it to what?
+the code you choose is out of range,please input it again,range from 0-7
+use 9 to save and quit,use 10 to list the color table again,use others to continue
+you want to refreash the map? it seems the you can't figure out how to move
+every time you refreash the map will cost your 10 scores
+do you want to continue?(y/n)
+#####GAME_INFO####
+THANKS FOR PLAYING
+EDITOR: ROYENHEART
+VERSION: DEMO 0.01
+STILL UPDATING....
+##################
+Have a pleasant life style

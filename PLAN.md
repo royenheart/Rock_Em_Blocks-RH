@@ -6,14 +6,22 @@
 5.Has built-in console to print the status of the game
 #the progress of the function
 1.The basic function of Rock_Em_Rocks 100%
-2.Can switch language 50%
+2.Can switch language 90%
+    -two languages: Chinese English 100%
+    -extra languages 0%
 3.Can score and upload to the server_online 50%
 4.Can switch the control method 0%
 5.Can change the graphs 0%
-6.Can change the themes 0%
+6.Can change the themes 60%
 7.Can have achievements 0%
-8.Can have mutil cheat commmands 20%
-9.Make the graphs more beautiful 50%
+8.Can have mutil cheat commmands 30%
+9.Make the graphs more beautiful 60%
+10.Need to tidy and classify the temp_variable 0%
+11.Check if the name is okay 60%
+    -only english 100%
+    -add more illegal part 10%
+        -create a tool to add different illegal part automaticlly
+12.Can switch the animation refresh rate 0%
 #somthings need to be made
 use dll to update the game
 dll can be used to calculate the user's rank

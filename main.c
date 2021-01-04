@@ -4,6 +4,7 @@
 	url: https://github.com/royenheart
 		 http://royenheart.com
 	project info: rock em blocks
+	below target is still updating
 	online mod: royenheart.com, memory the rank and the player name
 	multiple map mod: random the type of the map, has multiple maps
 					  pre_configure/creative mod/randomize map
@@ -18,6 +19,7 @@
 #include <conio.h>
 #include <windows.h>
 #include <ctype.h>
+#include <math.h>
 
 /*macro define*/
 #define Max_bound 36 //the maximun size of map
@@ -28,8 +30,10 @@
 typedef struct map
 {
 	int scale;
-	//using number 1-6,0 as the block,as ascll
-	//-1 needs to be filled but not the block
+	//using number 1-6
+	//-1 needs to be filled but not the block (color as )
+	//(demo version) fuction below is still tested
+	//will be updated in the later version
 	int color;//the color
 }mp;
 ///the information of players
@@ -57,6 +61,9 @@ typedef struct users
 	//guests's data is stored in yh pre_data.txt
 }usr;
 /*global var define*/
+//secure
+char illegal_name[100][21]={'\0'};//check some illegal word is in
+int ill_num=-1;
 //used for the create_map,to print the map line by line
 mp map[6][6]={0};
 //tools to initial the map
@@ -67,17 +74,57 @@ char pha_sta[100][max_com_line]={'\0'};
 //game_related
 usr users;//user_data
 int *usr_da_list[]={&users.type,&users.max_level};//make a list to initial
-int score=0;//reflect the score one level
+int score=100;//reflect the score one level
 int total_add_score=0;//reflect the score once played
 int pass_level=0;//level passed one game
 char command=0;//command to control the game
-int themes[4]={4,7,9,15};//preset themes
+time_t start,end;//one game play total time 
+int play_time[3];
 //system_info
+int num_the[6]={1,2,3,4,5,6};
+int fore_color=15;
+int bac_color=0;//setcolor(*.bac_color)
+int *color_da_list[]={&num_the[0],&num_the[1],&num_the[2],
+					  &num_the[3],&num_the[4],&num_the[5],
+					  &fore_color,&bac_color};
 int sys_lan;//system language
 /*function declare*/
 void print_map(void);
 void com_line(int l,int r);
 /*function define*/
+//time calculate
+void time_cal(int total_time)
+{
+	for(int i=0;i<=2;i++)
+	{
+		int rate=3600/pow(60,i);
+		play_time[i]=total_time/rate;
+		total_time-=play_time[i]*rate;
+	}
+}
+//secure-check if the name is illegal
+void initial_ill(void)
+{
+	FILE *ill_f=fopen("illegal_name.txt","r");
+	while(!feof(ill_f))
+	{
+		fgets(illegal_name[++ill_num],21,ill_f);
+		int temp=strlen(illegal_name[ill_num])-1;
+		illegal_name[ill_num][temp]='\0';
+	}
+	fclose(ill_f);
+}
+int Check_Name(char name[])
+{
+	for(int i=0;i<=ill_num;i++)
+	{
+		if(strstr(illegal_name[i],name))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 //color set
 void SetColor(UINT uFore,UINT uBack)
 {
@@ -90,7 +137,7 @@ void SetTitle(LPCSTR lpTitle)
 	SetConsoleTitle(lpTitle);
 }
 //above are from //https://blog.csdn.net/cjz2005/article/details/104358000
-void pANDs(VOID){print_map();Sleep(200);system("cls");Sleep(200);}
+void pANDs(VOID){print_map();Sleep(150);system("cls");Sleep(150);}
 void exchange(int *a,int *b)
 {
 	*a=*a^*b;
@@ -103,7 +150,7 @@ void spilt(char nee[])
 	int i=-1,num=-1;
 	char change[21]={'\0'};
 	while(nee[++i]!=':'){NULL;}
-	while(isalpha(nee[++i]))
+	while(nee[++i]!='\n')
 	{
 		change[++num]=nee[i];
 	}
@@ -149,17 +196,17 @@ int user_change(char dat[])
 }
 ///every sentence has its id in arr
 ///introduce the language file:to change the words of UI(en-gb/zh-cn)
-void intro_lan(int i)
+void intro_lan(int la)
 {
 	//i: 1 as Chinese; 2 as English
 	FILE *p;
 	int num=-1;
-	if(i==1)
+	if(la==1)
 	{
 		p=fopen("zh_lan.txt","r");
 		sys_lan=1;
 	}
-	else if(i==2)
+	else if(la==2)
 	{
 		p=fopen("en_lan.txt","r");
 		sys_lan=2;
@@ -174,41 +221,41 @@ void intro_lan(int i)
 ///print the graph of the map
 void print_map(void)
 {
-	SetColor(themes[0],0);
+	SetColor(fore_color,bac_color);
 	printf("Welcome player:\t%s\n",users.name);
 	printf("Level:%d\t\tScore:%d\n",com_level,score);
-	SetColor(themes[1],0);
+	SetColor(fore_color,bac_color);
 	printf("Y--------------------------->\n");
 	printf("X @ | 1 | 2 | 3 | 4 | 5 | 6 |\n");
 	for(int i=0;i<=5;i++)
 	{
-		SetColor(themes[1],0);
+		SetColor(fore_color,bac_color);
 		printf("| %d |",i+1);
 		for(int j=0;j<=5;j++)
 		{
 			if(map[i][j].scale==-1)
 			{
-				SetColor(0,0);
+				SetColor(bac_color,bac_color);
 				printf(" %d ",8);
 				if(j<5){printf(" ");}
 				continue;
 			}
-			SetColor(map[i][j].scale,0);
+			SetColor(num_the[map[i][j].scale-1],bac_color);
 			printf(" %d ",map[i][j].scale);
 			if(j<5){printf(" ");}
 		}
-		SetColor(themes[1],0);
+		SetColor(fore_color,bac_color);
 		printf("|\n");
 	}
-	SetColor(themes[1],0);
+	SetColor(fore_color,bac_color);
 	printf("+----------------------------\n");
-	SetColor(themes[3],0);
+	SetColor(fore_color,bac_color);
 }
 ///initial the map from txt (start game)
 ///or initial the map every new level
 void initial_map(int le)
 {
-	score=0;
+	score-=100;
 	for(int i=0;i<=5;i++)
 	{
 		for(int j=0;j<=5;j++)
@@ -309,8 +356,9 @@ int eliminate(int x,int y,int number)
 	}
 }
 ///create new pixel and print the effect of falling down
-int fall_down(void)
+int fall_down(int is_reveal)//is_reveal used to if reveal the process
 {
+	//is_reveal 1 to reveal the process, 0 as NOT
 	//every time change the structure of map,call the 'print_map' function
 	srand((unsigned)time(NULL));
 	int is_none=1;
@@ -329,7 +377,7 @@ int fall_down(void)
 			}
 			if(map[0][y].scale==-1){map[0][y].scale=(rand()%6)+1;}
 		}
-		pANDs();
+		if(is_reveal){pANDs();}
 	}
 	//call the eliminate to examine it again
 	is_none=0;
@@ -342,8 +390,8 @@ int fall_down(void)
 	}
 	if(is_none)
 	{
-		pANDs();
-		fall_down();
+		if(is_reveal){pANDs();}
+		fall_down(is_reveal);
 	}
 	return 0;
 }
@@ -374,6 +422,7 @@ void setting_change(char unable[])
 			do
 			{
 				is_legal=0;
+				//check if all is eng
 				for(int i=0;i<strlen(id)-1;i++)
 				{
 					if(!isalpha(id[i]))
@@ -381,6 +430,10 @@ void setting_change(char unable[])
 						is_legal=1;
 						break;
 					}
+				}
+				if(Check_Name(id))
+				{
+					is_legal=1;
 				}
 				if(is_legal)
 				{
@@ -409,11 +462,16 @@ int main(char argc,char *argv[])
 {
 	char com_unable[30]={'\0'};//unable command list
 	int is_cheated=0;
+	//basic language
+	intro_lan(2);
+	sys_lan=2;
 	//set title
-	SetTitle("Welcome to Rock_Em_Blocks!");
+	char game_title[]="Welcome to Rock_Em_Blocks! ";
+	strcat(game_title,pha_sta[84]);
+	SetTitle(game_title);
 	//cols=how many words every line,lines=how many lines
 	system("mode con cols=80 lines=40");
-	//fixed the size of the console,methods comre from:
+	//fixed the size of the console,methods come from:
 	//https://bbs.csdn.net/topics/392191971
 	HWND hWnd = GetConsoleWindow();
     RECT rc;
@@ -449,23 +507,21 @@ int main(char argc,char *argv[])
 		strcpy(users.name,exer);
 		for(int i=0;i<2;i++)
 		{
-			fgets(exer,sizeof(char)*21,ur);fgetc(ur);
+			fgets(exer,sizeof(char)*21,ur);
 			spilt(exer);
 			*usr_da_list[i]=atoi(exer);
 		}
 		fclose(ur);
 	}
-	//basic language
-	intro_lan(2);
-	sys_lan=2;
 	//initial basic settings
 	command='\0';system("cls");
+	initial_ill();//include the illegal name list
 	//read map_info from txt
 	FILE *ini_m=fopen("level.txt","r");
 	int i=-1;
 	while (!feof(ini_m))
 	{
-		fgets(level[++i],37,ini_m);
+		fgets(level[++i],38,ini_m);
 	}
 	fclose(ini_m);
 	com_level=users.max_level;
@@ -473,6 +529,7 @@ int main(char argc,char *argv[])
 	//setting initial
 	setting_change(com_unable);
 	system("cls");
+	start=time(NULL);
 	//start the game
 	do
 	{
@@ -511,7 +568,7 @@ int main(char argc,char *argv[])
                     if(i)
 					{
 						pANDs();
-						fall_down();
+						fall_down(1);
 						break;
 					}
 					else
@@ -556,23 +613,119 @@ int main(char argc,char *argv[])
 		else if(command=='i')
 		{
 			com_line(66,66);
-			int chose_le;
-			scanf("%d",&chose_le);getchar();
-			if(chose_le>users.max_level)
+			while(1)
 			{
-				com_line(67,67);
-				com_line(69,69);
+				com_line(70,70);
+				printf("%d\n",users.max_level);
+				int chose_le;
+				scanf("%d",&chose_le);getchar();
+				if(chose_le>users.max_level)
+				{
+					com_line(67,67);
+					com_line(69,69);
+				}
+				else if(chose_le>39 || chose_le<0)
+				{
+					com_line(68,68);
+					com_line(69,69);
+				}
+				else
+				{
+					score=100;
+					initial_map(chose_le);
+					com_level=chose_le;
+					break;
+				}
 			}
-			else if(chose_le>39 || chose_le<0)
+			system("cls");
+		}
+		else if(command=='t')
+		{
+			int abab=0;
+			com_line(71,71);
+			for(;abab<=15;abab++)
 			{
-				com_line(68,68);
-				com_line(69,69);
+				SetColor(abab,bac_color);
+				printf("Color num %d's color\n",abab);
 			}
-			else
+			while(1)
 			{
-				initial_map(chose_le);
-				com_level=chose_le;
+				com_line(72,72);
+				for(i=0;i<=5;i++)
+				{
+					SetColor(num_the[i],bac_color);
+					printf("%d.num %d's color\n",i,i+1);
+				}
+				SetColor(fore_color,bac_color);
+				printf("fore color's color\n");
+				printf("back color's color is %d\n",bac_color);
+				com_line(73,74);
+				int chan_co,what_co;
+				while(1)
+				{
+					scanf("%d",&chan_co);getchar();
+					if(chan_co<0 || chan_co>7)
+					{
+						com_line(76,76);
+					}
+					else{break;}
+				}
+				com_line(75,75);
+				scanf("%d",&what_co);getchar();
+				what_co%=16;
+				*color_da_list[chan_co]=what_co;
+				com_line(77,77);
+				int t_com;
+				scanf("%d",&t_com);getchar();
+				if(t_com==9){break;}
+				else if(t_com==10)
+				{
+					com_line(71,71);
+					for(abab=0;abab<=15;abab++)
+					{
+						SetColor(abab,bac_color);
+						printf("Color num %d's color\n",abab);
+					}
+				}
 			}
+		}
+		else if(command=='f')
+		{
+			com_line(78,80);
+			scanf("%c",&command);getchar();
+			command=tolower(command);
+			if(command=='y')
+			{
+				int pre_score=score;
+				int pre_tt_score=total_add_score;
+				srand((unsigned)time(NULL));
+				for(int i=0;i<=5;i++)
+				{
+					for(int j=0;j<=5;j++)
+					{
+						map[i][j].scale=rand()%6+1;
+					}
+				}
+				for(int i=0;i<=5;i++)
+				{
+					for(int j=0;j<=5;j++)
+					{
+						eliminate(i,j,map[i][j].scale);
+					}
+				}
+				fall_down(0);
+				score=pre_score-10;
+				total_add_score=pre_tt_score;
+				if(score<0)
+				{
+					com_line(41,41);
+					break;
+				}
+			}
+		}
+		else if(command=='g')
+		{
+			com_line(81,86);
 		}
 		else if(command=='~')
 		{
@@ -596,6 +749,7 @@ int main(char argc,char *argv[])
 	}while(command!='q');
 	if(!is_cheated)
 	{
+		end=time(NULL);
 		com_line(42,42);
 		printf("%d\n",total_add_score);
 		switch (total_add_score/100)
@@ -626,6 +780,11 @@ int main(char argc,char *argv[])
 						   "max_level:%d\n",
 						   users.name,users.type,users.max_level);
 		fclose(update_usr);
+		time_cal((int)difftime(end,start));
+		printf("You have played "
+			   "%d hours %d mins %d secs\n",
+			   play_time[0],play_time[1],play_time[2]);
+		com_line(87,87);
 		com_line(49,49);
 	}
 	else
@@ -633,4 +792,5 @@ int main(char argc,char *argv[])
 		com_line(65,65);
 	}
 	system("pause");
+	return 0;
 }
