@@ -1,9 +1,9 @@
 Map has been initialed
 Map has been printed
 Deleted,you have earned coins in total:
-Found the map has dead,recreating the map
-Falling down...
-Welcome,user
+Your Score:
+Your Level:
+Welcome,player
 Help:
 Github:https://github.com/royenheart
 Website:royenheart.com
@@ -18,21 +18,21 @@ Select your language:
 Please intput a command to change the settings
 L:select your language
 U:initial your user_id
-If user hasn't exited,we will created one
-If user has data,the level will be the the max level you have played
+If user hasn't exited,we will created one,or your level will be the max level
+C.Change the themes(at most 20)
 H:list help that may help you
 Q:Save and quit
 --------------------------------------------------------------------------------
-Please input a command to make play the game
+Please input a command to play the game
 P.switch the nearby block
 S.change the settings
-T.change the themes/pixel color
+T.change the pattern color
 F.refreash the map
 G.Game Information
 I.play the previous levels
 Q.quit the game
 Please input the selected number position
-the format is posxA,posyA posxB,posyB
+the format is "posxA,posyA posxB,posyB",type -1,-1 -1,-1 to quit
 you have input the position which is out of the map
 please switch two nearby pixels
 the switch seems to have no Deleted
@@ -44,14 +44,14 @@ you have earned scores this time totally:
 Awsome!!!
 Excellent!!
 Great!
-Loser~~
+emm...
 Are you really playing this game???
 you have totally passed levels:
 Welcome to play this game again!
 now choose your user_id,most 20 characters and consists of only english
 the user data hasn't been found,we will help you create one
 user has been found,wait for load
-user id is different from the previous,want to cover the old?
+user id is different from the previous,want to cover the old?(y/n)
 you have passed every level in this pack!!!
 enjoy your success,and if you want to find more map pack to play
 welcome to our website royenheart.com for more seasons pack!
@@ -86,3 +86,6 @@ VERSION: DEMO 0.01
 STILL UPDATING....
 ##################
 Have a pleasant life style
+you have played every map in this pack,want start from the begining?(y/n)
+you can choose the number before the themes to change
+refreash...

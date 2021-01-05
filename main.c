@@ -20,9 +20,10 @@
 #include <windows.h>
 #include <ctype.h>
 #include <math.h>
+#pragma warning(disable:4996)
 
 /*macro define*/
-#define Max_bound 36 //the maximun size of map
+#define DEFAULT 0 //default as 0
 #define max_com_line 100 //the maximun size of com_line
 
 /*structure define*/
@@ -68,30 +69,98 @@ int ill_num=-1;
 mp map[6][6]={0};
 //tools to initial the map
 char level[40][37]={'\0'};///map data every level
-int com_level=0;///current level,every level has 100 scores
+int com_level=DEFAULT;///current level,every level has 100 scores
 //used for output the intro with language_file
 char pha_sta[100][max_com_line]={'\0'};
 //game_related
 usr users;//user_data
 int *usr_da_list[]={&users.type,&users.max_level};//make a list to initial
 int score=100;//reflect the score one level
-int total_add_score=0;//reflect the score once played
-int pass_level=0;//level passed one game
-char command=0;//command to control the game
+int total_add_score=DEFAULT;//reflect the score once played
+int pass_level=DEFAULT;//level passed one game
+char command='\0';//command to control the game
 time_t start,end;//one game play total time 
 int play_time[3];
 //system_info
 int num_the[6]={1,2,3,4,5,6};
 int fore_color=15;
-int bac_color=0;//setcolor(*.bac_color)
+int bac_color=DEFAULT;
 int *color_da_list[]={&num_the[0],&num_the[1],&num_the[2],
 					  &num_the[3],&num_the[4],&num_the[5],
 					  &fore_color,&bac_color};
-int sys_lan;//system language
+int themes[20][8];
+int themes_amo;
+int com_themes=DEFAULT;
+int sys_lan=1;//system language
+//config
+int *config[]={&com_themes,&sys_lan};
+int cfg_num=DEFAULT;//start from 0
 /*function declare*/
+void SetColor(UINT uFore,UINT uBack);
 void print_map(void);
 void com_line(int l,int r);
 /*function define*/
+//config read
+void initial_config(void)//demo
+{
+	FILE *cfg;
+	if(!(cfg=fopen("config.rsav","r")))
+	{
+		cfg=fopen("config.rsav","w");
+		fprintf(cfg,"01\n");
+		fclose(cfg);
+	}
+	else
+	{
+		for(int i=0;i<=1;i++)
+		{
+			*config[i]=fgetc(cfg)-48;
+		}
+		fclose(cfg);
+	}
+}
+//themes read
+void initial_themes(void)
+{
+	FILE *the_file;
+	if(!(the_file=fopen("themes.txt","r")))
+	{
+		the_file=fopen("themes.txt","w");
+		fprintf(the_file,"%02d%02d%02d%02d%02d%02d%02d%02d\n",
+						 num_the[0],num_the[1],num_the[2],
+						 num_the[3],num_the[4],num_the[5],
+						 fore_color,bac_color);
+		fclose(the_file);
+		themes_amo=0;
+	}
+	else
+	{
+		int amoun=-1;
+		while(!feof(the_file) && ++amoun<=19)
+		{
+			char temp[18]={"\0"};
+			char num[3]={"\0"};
+			fgets(temp,18,the_file);
+			if(temp[0]=='\n'){amoun--;break;}
+			for(int i=0;i<=7;i++)
+			{
+				num[0]=temp[i*2];num[1]=temp[i*2+1];
+				themes[amoun][i]=atoi(num);
+			}
+		}
+		fclose(the_file);
+		themes_amo=amoun-1;
+	}
+}
+//themes chaneg
+void change_themes(int thm_num)
+{
+	for(int i=0;i<=7;i++)
+	{
+		*color_da_list[i]=themes[thm_num%(themes_amo+1)][i];
+	}
+	SetColor(fore_color,bac_color);
+}
 //time calculate
 void time_cal(int total_time)
 {
@@ -112,13 +181,14 @@ void initial_ill(void)
 		int temp=strlen(illegal_name[ill_num])-1;
 		illegal_name[ill_num][temp]='\0';
 	}
+	ill_num--;
 	fclose(ill_f);
 }
 int Check_Name(char name[])
 {
 	for(int i=0;i<=ill_num;i++)
 	{
-		if(strstr(illegal_name[i],name))
+		if(strstr(name,illegal_name[i]))
 		{
 			return 1;
 		}
@@ -129,7 +199,7 @@ int Check_Name(char name[])
 void SetColor(UINT uFore,UINT uBack)
 {
 	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(handle,uFore+uBack*0x10);
+	SetConsoleTextAttribute(handle,uFore | uBack*0x10);
 }
 //title change
 void SetTitle(LPCSTR lpTitle) 
@@ -166,7 +236,7 @@ int user_change(char dat[])
 	{
 		com_line(52,52);
 		strcpy(users.name,temp);
-		for(int i=0;i<2;i++)
+		for(int i=0;i<=1;i++)
 		{
 			fgets(temp,sizeof(char)*21,uss);
 			spilt(temp);
@@ -189,7 +259,11 @@ int user_change(char dat[])
 			user_change(dat);
 			return 0;
 		}
-		else{fclose(uss);return -1;}
+		else
+		{
+			getchar();fclose(uss);
+			return -1;
+		}
 	}
 	fclose(uss);
 	return 0;
@@ -222,9 +296,8 @@ void intro_lan(int la)
 void print_map(void)
 {
 	SetColor(fore_color,bac_color);
-	printf("Welcome player:\t%s\n",users.name);
-	printf("Level:%d\t\tScore:%d\n",com_level,score);
-	SetColor(fore_color,bac_color);
+	com_line(5,5);printf("%s\n",users.name);
+	printf("MAP:%02d|Score:%03d\n",com_level,score);
 	printf("Y--------------------------->\n");
 	printf("X @ | 1 | 2 | 3 | 4 | 5 | 6 |\n");
 	for(int i=0;i<=5;i++)
@@ -247,9 +320,7 @@ void print_map(void)
 		SetColor(fore_color,bac_color);
 		printf("|\n");
 	}
-	SetColor(fore_color,bac_color);
 	printf("+----------------------------\n");
-	SetColor(fore_color,bac_color);
 }
 ///initial the map from txt (start game)
 ///or initial the map every new level
@@ -267,7 +338,7 @@ void initial_map(int le)
 ///for cheat_com explain
 int cheat_ex_com(char che_com[])
 {
-	if(strstr(che_com,"quit")){return 1;}
+	if(strstr(che_com,"quit")){return 2;}
 	if(strstr(che_com,"add score"))
 	{
 		printf("add how many?\n");
@@ -281,7 +352,7 @@ int cheat_ex_com(char che_com[])
 		printf("pass how many levels?\n");
 		int c_l;
 		scanf("%d",&c_l);getchar();
-		com_level+=c_l;
+		com_level+=c_l;score+=100;
 		initial_map(com_level);
 		return 1;
 	}
@@ -325,8 +396,8 @@ int eliminate(int x,int y,int number)
 			{
 				if(map[x][i].scale==number)
 				{
-					total_add_score++;
-					score++;
+					total_add_score+=number;
+					score+=number;
 				}
 				map[x][i].scale=-1;
 			}
@@ -342,8 +413,8 @@ int eliminate(int x,int y,int number)
 			{
 				if(map[i][y].scale==number)
 				{
-					total_add_score++;
-					score++;
+					total_add_score+=number;
+					score+=number;
 				}
 				map[i][y].scale=-1;
 			}
@@ -395,6 +466,18 @@ int fall_down(int is_reveal)//is_reveal used to if reveal the process
 	}
 	return 0;
 }
+//user data refresh
+void usr_data_rew(void)//demo
+{
+	if(com_level>users.max_level){users.max_level=com_level;}
+	FILE *update_usr=fopen("usr_data.txt","w");
+	fprintf(update_usr,"name:%s\n"
+					   "type:%d\n"
+					   "max_level:%d\n",
+					   users.name,users.type,users.max_level);
+	fclose(update_usr);
+}
+//settings
 void setting_change(char unable[])
 {
 	do
@@ -442,16 +525,46 @@ void setting_change(char unable[])
 				}
 			}while(is_legal);
 			user_change(id);
+			com_level=users.max_level;
+			score=100;
+			initial_map(com_level);
 		}
 		else if(command=='h')
 		{
 			com_line(6,10);
 		}
-		else
+		else if(command=='c')
+		{
+			com_line(89,89);
+			SetColor(fore_color,bac_color);
+			printf("#############################\n"
+			       "#themes ls# 1 2 3 4 5 6 f b #\n");
+			for(int i=0;i<=themes_amo;i++)
+			{
+				printf("#themes:%02d#",i);
+				for(int m=0;m<=7;m++)
+				{
+					SetColor(themes[i][m],bac_color);
+					printf(" S");
+				}
+				SetColor(fore_color,bac_color);
+				printf(" #\n");
+			}
+			printf("#############################\n");
+			int chose;
+			scanf("%d",&chose);getchar();
+			change_themes(chose);
+			com_themes=chose;
+			system("cls");
+		}
+		else if(command!='q')
 		{
 			printf("%c %s",command,pha_sta[11]);
 		}
 		/*Using the language file to output??Maybe it will be faster*/
+		com_line(16,16);
+		com_line(5,5);
+		printf("%s\n",users.name);
 		com_line(16,24);
 		scanf("%c",&command);getchar();
 		command=tolower(command);
@@ -462,17 +575,18 @@ int main(char argc,char *argv[])
 {
 	char com_unable[30]={'\0'};//unable command list
 	int is_cheated=0;
+	//config initial
+	initial_config();
 	//basic language
-	intro_lan(2);
-	sys_lan=2;
+	intro_lan(sys_lan);
 	//set title
 	char game_title[]="Welcome to Rock_Em_Blocks! ";
 	strcat(game_title,pha_sta[84]);
 	SetTitle(game_title);
 	//cols=how many words every line,lines=how many lines
-	system("mode con cols=80 lines=40");
 	//fixed the size of the console,methods come from:
 	//https://bbs.csdn.net/topics/392191971
+	system("mode con cols=80 lines=40");
 	HWND hWnd = GetConsoleWindow();
     RECT rc;
     GetWindowRect(hWnd, &rc);
@@ -487,8 +601,6 @@ int main(char argc,char *argv[])
         NULL
 	);
 	//initial the user
-	//1.3 still has some problems to solve
-	//usr data can't be loaded
 	FILE *ur;
 	if(!(ur=fopen("usr_data.txt","r")))
 	{
@@ -513,9 +625,11 @@ int main(char argc,char *argv[])
 		}
 		fclose(ur);
 	}
+	com_level=users.max_level;
 	//initial basic settings
-	command='\0';system("cls");
 	initial_ill();//include the illegal name list
+	initial_themes();//include the themes config from the txt
+	change_themes(com_themes);
 	//read map_info from txt
 	FILE *ini_m=fopen("level.txt","r");
 	int i=-1;
@@ -524,10 +638,28 @@ int main(char argc,char *argv[])
 		fgets(level[++i],38,ini_m);
 	}
 	fclose(ini_m);
-	com_level=users.max_level;
 	initial_map(com_level);
 	//setting initial
 	setting_change(com_unable);
+	if(com_level==40)
+	{
+		com_line(88,88);
+		scanf("%c",&command);getchar();
+		command=tolower(command);
+		if(command=='y')
+		{
+			score=100;
+			com_level=0;
+			initial_map(com_level);
+		}
+		else
+		{
+			score=100;
+			com_level=39;
+			initial_map(com_level);
+		}
+		command='\0';
+	}
 	system("cls");
 	start=time(NULL);
 	//start the game
@@ -545,6 +677,7 @@ int main(char argc,char *argv[])
 									&posxb,&posyb);
 				getchar();
 				system("cls");
+				if(posxa+posxb+posya+posyb==-4){break;}				
 				--posxa;--posxb;--posya;--posyb;
 				//check if the pos is illeagle
 				if((posxa>5 || posxa<0) ||
@@ -563,13 +696,12 @@ int main(char argc,char *argv[])
 					exchange(&map[posxa][posya].scale,&map[posxb][posyb].scale);
 					exchange(&map[posxa][posya].color,&map[posxb][posyb].color);
 					int sc_a=map[posxa][posya].scale,sc_b=map[posxb][posyb].scale;
-					int i=eliminate(posxa,posya,sc_a);
-					i|=eliminate(posxb,posyb,sc_b);
-                    if(i)
+					int pd=eliminate(posxa,posya,sc_a);
+					pd|=eliminate(posxb,posyb,sc_b);
+                    if(pd)
 					{
 						pANDs();
 						fall_down(1);
-						break;
 					}
 					else
 					{
@@ -579,26 +711,30 @@ int main(char argc,char *argv[])
 						pANDs();
 						com_line(37,38);
 						score-=5;
+					}
+				}
+				if(score>=100)
+				{
+					com_level++;
+					pass_level++;
+					usr_data_rew();
+					if(com_level<40)
+					{
+						initial_map(com_level);
+						com_line(39,40);
+						printf("%d!!!\n",com_level);
 						break;
 					}
 				}
-			}
-			if(score>=100)
-			{
-				com_level++;
-				if(com_level==40)
+				else if(score<0)
 				{
-					com_line(54,54);
+					com_line(41,41);
 					break;
 				}
-				initial_map(com_level);
-				pass_level++;
-				com_line(39,40);
-				printf("%d!!!\n",com_level);
 			}
-			else if(score<0)
+			if(com_level==40)
 			{
-				com_line(41,41);
+				com_line(54,54);
 				break;
 			}
 		}
@@ -641,8 +777,10 @@ int main(char argc,char *argv[])
 		}
 		else if(command=='t')
 		{
-			int abab=0;
+			int abab=1;
 			com_line(71,71);
+			SetColor(fore_color,bac_color);
+			printf("Color num 0's color is black\n");
 			for(;abab<=15;abab++)
 			{
 				SetColor(abab,bac_color);
@@ -677,7 +815,17 @@ int main(char argc,char *argv[])
 				com_line(77,77);
 				int t_com;
 				scanf("%d",&t_com);getchar();
-				if(t_com==9){break;}
+				if(t_com==9)
+				{
+					FILE *the_rew=fopen("themes.txt","a");
+					for(int i=0;i<=7;i++)
+					{
+						fprintf(the_rew,"%02d",*color_da_list[i]);
+					}
+					fprintf(the_rew,"\n");
+					fclose(the_rew);
+					break;
+				}
 				else if(t_com==10)
 				{
 					com_line(71,71);
@@ -688,6 +836,8 @@ int main(char argc,char *argv[])
 					}
 				}
 			}
+			SetColor(fore_color,bac_color);
+			system("cls");
 		}
 		else if(command=='f')
 		{
@@ -722,6 +872,7 @@ int main(char argc,char *argv[])
 					break;
 				}
 			}
+			system("cls");
 		}
 		else if(command=='g')
 		{
@@ -738,18 +889,25 @@ int main(char argc,char *argv[])
 				gets(che_com);
 				com_fou=cheat_ex_com(che_com);
 				if(!com_fou){com_line(64,64);}
-				com_line(62,63);
+				if(com_fou==1){com_line(62,63);}
 			} while (!strstr(che_com,"quit"));
+			system("cls");
+		}
+		else if(command!='q')
+		{
+			printf("%c %s",command,pha_sta[11]);
 		}
 		print_map();	
 		com_line(25,32);	
 		scanf("%c",&command);getchar();
+		if(command=='\n'){getchar();}
 		command=tolower(command);
 		system("cls");
 	}while(command!='q');
 	if(!is_cheated)
 	{
 		end=time(NULL);
+		usr_data_rew();
 		com_line(42,42);
 		printf("%d\n",total_add_score);
 		switch (total_add_score/100)
@@ -770,16 +928,8 @@ int main(char argc,char *argv[])
 				com_line(43,43);
 				break;
 		}
-		if(com_level>users.max_level){users.max_level=com_level;}
 		com_line(48,48);
 		printf("%d\n",pass_level);
-		//update the users' data
-		FILE *update_usr=fopen("usr_data.txt","w");
-		fprintf(update_usr,"name:%s\n"
-						   "type:%d\n"
-						   "max_level:%d\n",
-						   users.name,users.type,users.max_level);
-		fclose(update_usr);
 		time_cal((int)difftime(end,start));
 		printf("You have played "
 			   "%d hours %d mins %d secs\n",
@@ -791,6 +941,14 @@ int main(char argc,char *argv[])
 	{
 		com_line(65,65);
 	}
+	//save the config_change
+	FILE *cfg_c=fopen("config.rsav","w");
+	for(int i=0;i<=1;i++)
+	{
+		fprintf(cfg_c,"%d",*config[i]);
+	}
+	fprintf(cfg_c,"\n");
+	fclose(cfg_c);
 	system("pause");
 	return 0;
 }
