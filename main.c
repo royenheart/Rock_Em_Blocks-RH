@@ -561,12 +561,12 @@ void setting_change(char unable[])
 		{
 			printf("%c %s",command,pha_sta[11]);
 		}
-		/*Using the language file to output??Maybe it will be faster*/
 		com_line(16,16);
 		com_line(5,5);
 		printf("%s\n",users.name);
 		com_line(16,24);
 		scanf("%c",&command);getchar();
+		if(command=='\n'){getchar();}
 		command=tolower(command);
 	} while (command!='q');
 }
@@ -625,7 +625,6 @@ int main(char argc,char *argv[])
 		}
 		fclose(ur);
 	}
-	com_level=users.max_level;
 	//initial basic settings
 	initial_ill();//include the illegal name list
 	initial_themes();//include the themes config from the txt
@@ -638,6 +637,7 @@ int main(char argc,char *argv[])
 		fgets(level[++i],38,ini_m);
 	}
 	fclose(ini_m);
+	com_level=users.max_level;
 	initial_map(com_level);
 	//setting initial
 	setting_change(com_unable);
@@ -732,6 +732,7 @@ int main(char argc,char *argv[])
 					break;
 				}
 			}
+			if(score<0){break;}
 			if(com_level==40)
 			{
 				com_line(54,54);
