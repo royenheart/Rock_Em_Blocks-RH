@@ -31,19 +31,18 @@
 typedef struct map
 {
 	int scale;
-	//using number 1-6
-	//-1 needs to be filled but not the block (color as )
+	//using number 1-6,color according to the theme
 	//(demo version) fuction below is still tested
 	//will be updated in the later version
 	int color;//the color
 }mp;
 ///the information of players
 ////the extented info for format users
-typedef struct info_extented
+typedef struct info_extented//demo
 {
 	//used for format users,stored in internet
 	int sex;
-	//1 male 2 female 3 unknow
+	//1 male 2 female 3 unknown
 	time_t register_date;
 	time_t last_play_date;
 	int rank;
@@ -59,12 +58,12 @@ typedef struct users
 	int type;
 	ie info;
 	//1 as format users 0 as guests
-	//guests's data is stored in yh pre_data.txt
 }usr;
 /*global var define*/
 //secure
 char illegal_name[100][21]={'\0'};//check some illegal word is in
 int ill_num=-1;
+int is_cheated=0;
 //used for the create_map,to print the map line by line
 mp map[6][6]={0};
 //tools to initial the map
@@ -207,7 +206,12 @@ void SetTitle(LPCSTR lpTitle)
 	SetConsoleTitle(lpTitle);
 }
 //above are from //https://blog.csdn.net/cjz2005/article/details/104358000
-void pANDs(VOID){print_map();Sleep(150);system("cls");Sleep(150);}
+//tools
+void pANDs(VOID)
+{
+	print_map();Sleep(150);system("cls");
+	Sleep(150);
+}
 void exchange(int *a,int *b)
 {
 	*a=*a^*b;
@@ -272,7 +276,7 @@ int user_change(char dat[])
 ///introduce the language file:to change the words of UI(en-gb/zh-cn)
 void intro_lan(int la)
 {
-	//i: 1 as Chinese; 2 as English
+	//la: 1 as Chinese; 2 as English
 	FILE *p;
 	int num=-1;
 	if(la==1)
@@ -291,7 +295,6 @@ void intro_lan(int la)
 	}
 	fclose(p);
 }
-///settings change
 ///print the graph of the map
 void print_map(void)
 {
@@ -323,7 +326,7 @@ void print_map(void)
 	printf("+----------------------------\n");
 }
 ///initial the map from txt (start game)
-///or initial the map every new level
+///initial the map every new level
 void initial_map(int le)
 {
 	score-=100;
@@ -335,7 +338,7 @@ void initial_map(int le)
 		}
 	}
 }
-///for cheat_com explain
+///for cheat command explain
 int cheat_ex_com(char che_com[])
 {
 	if(strstr(che_com,"quit")){return 2;}
@@ -364,7 +367,7 @@ int cheat_ex_com(char che_com[])
 	}
 	return 0;
 }
-///output the command or note sentence
+///output the introduction
 void com_line(int l,int r)
 {
 	for(int i=l;i<=r;i++){printf("%s",pha_sta[i]);}
@@ -374,8 +377,7 @@ int eliminate(int x,int y,int number)
 {
 	//judging the eligible pixel and then eliminate it
 	//every time look for the same number
-	//using number 1-6,//(to be checked)0 as the block,as ascll
-	//-1 needs to be filled but not the block
+	//using number 1-6,-1 used to indicate NULL
 	if(number==-1)
 	{
 		return 0;
@@ -430,7 +432,7 @@ int eliminate(int x,int y,int number)
 int fall_down(int is_reveal)//is_reveal used to if reveal the process
 {
 	//is_reveal 1 to reveal the process, 0 as NOT
-	//every time change the structure of map,call the 'print_map' function
+	//every time change the patterns of map,call the 'print_map' function
 	srand((unsigned)time(NULL));
 	int is_none=1;
 	while(is_none)
@@ -469,15 +471,18 @@ int fall_down(int is_reveal)//is_reveal used to if reveal the process
 //user data refresh
 void usr_data_rew(void)//demo
 {
-	if(com_level>users.max_level){users.max_level=com_level;}
-	FILE *update_usr=fopen("usr_data.txt","w");
-	fprintf(update_usr,"name:%s\n"
-					   "type:%d\n"
-					   "max_level:%d\n",
-					   users.name,users.type,users.max_level);
-	fclose(update_usr);
+	if(!is_cheated)
+	{
+		if(com_level>users.max_level){users.max_level=com_level;}
+		FILE *update_usr=fopen("usr_data.txt","w");
+		fprintf(update_usr,"name:%s\n"
+						"type:%d\n"
+						"max_level:%d\n",
+						users.name,users.type,users.max_level);
+		fclose(update_usr);
+	}
 }
-//settings
+//settings change
 void setting_change(char unable[])
 {
 	do
@@ -574,7 +579,6 @@ void setting_change(char unable[])
 int main(char argc,char *argv[])
 {
 	char com_unable[30]={'\0'};//unable command list
-	int is_cheated=0;
 	//config initial
 	initial_config();
 	//basic language
@@ -658,7 +662,7 @@ int main(char argc,char *argv[])
 			com_level=39;
 			initial_map(com_level);
 		}
-		command='\0';
+		command='q';
 	}
 	system("cls");
 	start=time(NULL);
@@ -723,8 +727,8 @@ int main(char argc,char *argv[])
 						initial_map(com_level);
 						com_line(39,40);
 						printf("%d!!!\n",com_level);
-						break;
 					}
+					break;
 				}
 				else if(score<0)
 				{
@@ -733,7 +737,7 @@ int main(char argc,char *argv[])
 				}
 			}
 			if(score<0){break;}
-			if(com_level==40)
+			if(com_level>=40)
 			{
 				com_line(54,54);
 				break;

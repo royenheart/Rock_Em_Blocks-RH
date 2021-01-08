@@ -1,0 +1,28 @@
+//screen refresh
+DWORD bytes=0;
+char sdata[1000];
+//screen refresh
+void scr(void)
+{
+	HANDLE hOutput=GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD coord={0,0};
+	POINT q={0,0};
+	LPPOINT s=&q;
+	GetCursorPos(s);
+	coord.X=s->x;coord.Y=s->y;
+	HANDLE hOutBuf=CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+	SetConsoleActiveScreenBuffer(hOutBuf);
+	CONSOLE_CURSOR_INFO cci;
+	cci.bVisible=0;
+	cci.dwSize=1;
+	SetConsoleCursorInfo(hOutput,&cci);
+	SetConsoleCursorInfo(hOutBuf,&cci);
+	ReadConsoleOutputCharacter(hOutput,sdata,1000,coord,&bytes);
+	WriteConsoleOutputCharacter(hOutBuf,sdata,1000,coord,&bytes);
+}
